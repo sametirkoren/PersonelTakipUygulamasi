@@ -1,17 +1,18 @@
-﻿using PersonelTakipUygulamasi.DataAccess.Abstract;
-using PersonelTakipUygulamasi.Entities.Concrete;
-using PersonelTakipUygulamasi.Tools.Connection.SQLite;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Data.SQLite;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using PersonelTakipUygulamasi.DataAccess.Abstract;
+using PersonelTakipUygulamasi.Entities.Concrete;
+using PersonelTakipUygulamasi.Tools.Connection.SQLite;
+using PersonelTakipUygulamasi.Tools.Connection.SqlServer;
 
-namespace PersonelTakipUygulamasi.DataAccess.Concrete.SQLite
+namespace PersonelTakipUygulamasi.DataAccess.Concrete.SqlServer
 {
-    public class SQLiteCalisanDal : ICalisanDal
+    public class SqlServerCalisanDal : ICalisanDal
     {
         public Calisan Getir(string kosulCumlesi)
         {
@@ -20,20 +21,20 @@ namespace PersonelTakipUygulamasi.DataAccess.Concrete.SQLite
             try
             {
                 int _sonuc = 0;
-                using (SQLiteCommand command = new SQLiteCommand($"SELECT COUNT (*) FROM Calisanlar {kosulCumlesi}", SQLiteBaglanti.Connection))
+                using (SqlCommand command = new SqlCommand($"SELECT COUNT (*) Calisanlar {kosulCumlesi}", SqlServerBaglanti.Connection))
                 {
-                    SQLiteBaglanti.BaglantiAc();
+                    SqlServerBaglanti.BaglantiAc();
                     _sonuc = Convert.ToInt32(command.ExecuteScalar());
                 }
-                if(_sonuc > 1)
+                if (_sonuc > 1)
                 {
                     MessageBox.Show("Yapılan sorgu sonucunda 1'den fazla kayıt bulundu...\nLütfen daha fazla kriter ile arama yapınız...");
                 }
                 else if (_sonuc == 1)
                 {
-                    using (SQLiteCommand command = new SQLiteCommand($"SELECT * FROM Calisanlar {kosulCumlesi}", SQLiteBaglanti.Connection))
+                    using (SqlCommand command = new SqlCommand($"SELECT * FROM Calisanlar {kosulCumlesi}", SqlServerBaglanti.Connection))
                     {
-                        using (SQLiteDataReader reader = command.ExecuteReader())
+                        using (SqlDataReader reader = command.ExecuteReader())
                         {
                             while (reader.Read())
                             {
@@ -50,7 +51,7 @@ namespace PersonelTakipUygulamasi.DataAccess.Concrete.SQLite
                                     Durumu = reader["Durumu"].ToString()
 
                                 };
-                                
+
                             }
                         }
                     }
@@ -64,27 +65,27 @@ namespace PersonelTakipUygulamasi.DataAccess.Concrete.SQLite
             }
             finally
             {
-                SQLiteBaglanti.BaglantiKapat();
+                SqlServerBaglanti.BaglantiKapat();
             }
         }
 
         public bool Guncelle(Calisan calisan)
         {
-            string sorguCumlesi = "Update Calisanlar SET Adi = @p1, SoyAdi = @p2, TCKimlikNo = @p3, PersonelNo = @p4, DogumTarihi= @p5, Departman = @p6, Unvan= @p7, Durumu = @p8 WHERE Id = @p9";
+            string sorguCumlesi = "Update Calisanlar SET Adi=@p1,SoyAdi=@p2,TCKimlikNo=@p3,PersonelNo=@p4,DogumTarihi=@p5,Departman=@p6,Unvan=@p7,Durumu=@p8 where Id=@p9)";
             try
             {
-                using (SQLiteCommand command = new SQLiteCommand(sorguCumlesi, SQLiteBaglanti.Connection))
+                using (SqlCommand command = new SqlCommand(sorguCumlesi, SqlServerBaglanti.Connection))
                 {
                     command.Parameters.AddWithValue("@p1", calisan.Adi);
                     command.Parameters.AddWithValue("@p2", calisan.SoyAdi);
                     command.Parameters.AddWithValue("@p3", calisan.TCKimlikNo);
                     command.Parameters.AddWithValue("@p4", calisan.PersonelNo);
-                    command.Parameters.AddWithValue("@p5", calisan.DogumTarihi.ToString("yyyy.MM.dd"));
+                    command.Parameters.AddWithValue("@p5", calisan.DogumTarihi);
                     command.Parameters.AddWithValue("@p6", calisan.Departman);
                     command.Parameters.AddWithValue("@p7", calisan.Unvan);
                     command.Parameters.AddWithValue("@p8", calisan.Durumu);
                     command.Parameters.AddWithValue("@p9", calisan.Id);
-                    SQLiteBaglanti.BaglantiAc();
+                    SqlServerBaglanti.BaglantiAc();
                     command.ExecuteNonQuery();
                 }
                 return true;
@@ -98,8 +99,8 @@ namespace PersonelTakipUygulamasi.DataAccess.Concrete.SQLite
             }
             finally
             {
-                SQLiteBaglanti.BaglantiKapat();
-            }   
+                SqlServerBaglanti.BaglantiKapat();
+            }
         }
 
         public bool Kaydet(Calisan calisan)
@@ -107,23 +108,23 @@ namespace PersonelTakipUygulamasi.DataAccess.Concrete.SQLite
             string sorguCumlesi = "INSERT INTO Calisanlar (Adi,SoyAdi,TCKimlikNo,PersonelNo,DogumTarihi,Departman,Unvan,Durumu) Values (@p1,@p2,@p3,@p4,@p5,@p6,@p7,@p8)";
             try
             {
-                using(SQLiteCommand command = new SQLiteCommand(sorguCumlesi, SQLiteBaglanti.Connection))
+                using (SqlCommand command = new SqlCommand(sorguCumlesi, SqlServerBaglanti.Connection))
                 {
                     command.Parameters.AddWithValue("@p1", calisan.Adi);
                     command.Parameters.AddWithValue("@p2", calisan.SoyAdi);
                     command.Parameters.AddWithValue("@p3", calisan.TCKimlikNo);
                     command.Parameters.AddWithValue("@p4", calisan.PersonelNo);
-                    command.Parameters.AddWithValue("@p5", calisan.DogumTarihi.ToString("yyyy.MM.dd"));
+                    command.Parameters.AddWithValue("@p5", calisan.DogumTarihi);
                     command.Parameters.AddWithValue("@p6", calisan.Departman);
                     command.Parameters.AddWithValue("@p7", calisan.Unvan);
                     command.Parameters.AddWithValue("@p8", calisan.Durumu);
-                    SQLiteBaglanti.BaglantiAc();
+                    SqlServerBaglanti.BaglantiAc();
                     command.ExecuteNonQuery();
                 }
                 return true;
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
 
@@ -131,7 +132,7 @@ namespace PersonelTakipUygulamasi.DataAccess.Concrete.SQLite
             }
             finally
             {
-                SQLiteBaglanti.BaglantiKapat();
+                SqlServerBaglanti.BaglantiKapat();
             }
         }
 
@@ -140,10 +141,10 @@ namespace PersonelTakipUygulamasi.DataAccess.Concrete.SQLite
             List<Calisan> calisanlar = new List<Calisan>();
             try
             {
-                using (SQLiteCommand command = new SQLiteCommand($"SELECT * FROM Calisanlar {kosulCumlesi}", SQLiteBaglanti.Connection))
+                using (SqlCommand command = new SqlCommand($"SELECT * FROM Calisanlar {kosulCumlesi}", SqlServerBaglanti.Connection))
                 {
-                    SQLiteBaglanti.BaglantiAc();
-                    using(SQLiteDataReader reader = command.ExecuteReader())
+                    SqlServerBaglanti.BaglantiAc();
+                    using (SqlDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
@@ -158,7 +159,7 @@ namespace PersonelTakipUygulamasi.DataAccess.Concrete.SQLite
                                 Departman = reader["Departman"].ToString(),
                                 Unvan = reader["Unvan"].ToString(),
                                 Durumu = reader["Durumu"].ToString()
-                               
+
                             };
                             calisanlar.Add(_calisan);
                         }
@@ -173,7 +174,7 @@ namespace PersonelTakipUygulamasi.DataAccess.Concrete.SQLite
             }
             finally
             {
-                SQLiteBaglanti.BaglantiKapat();
+                SqlServerBaglanti.BaglantiKapat();
             }
         }
 
@@ -181,33 +182,9 @@ namespace PersonelTakipUygulamasi.DataAccess.Concrete.SQLite
         {
             try
             {
-                using(SQLiteCommand command = new SQLiteCommand($"DELETE FROM Calisanlar {kosulCumlesi}",SQLiteBaglanti.Connection))
+                using (SqlCommand command = new SqlCommand($"DELETE FROM Calisanlar {kosulCumlesi}", SqlServerBaglanti.Connection))
                 {
-                    SQLiteBaglanti.BaglantiAc();
-                    command.ExecuteNonQuery();
-                }
-                return true;
-            }
-            catch(Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                return false;
-
-            }
-            finally
-            {
-                SQLiteBaglanti.BaglantiKapat();
-            }
-        }
-
-        public bool Sil(int id)
-        {
-            try
-            {
-                using (SQLiteCommand command = new SQLiteCommand($"DELETE FROM Calisanlar where Id=@p1", SQLiteBaglanti.Connection))
-                {
-                    command.Parameters.AddWithValue("@p1", id);
-                    SQLiteBaglanti.BaglantiAc();
+                    SqlServerBaglanti.BaglantiAc();
                     command.ExecuteNonQuery();
                 }
                 return true;
@@ -220,7 +197,31 @@ namespace PersonelTakipUygulamasi.DataAccess.Concrete.SQLite
             }
             finally
             {
-                SQLiteBaglanti.BaglantiKapat();
+                SqlServerBaglanti.BaglantiKapat();
+            }
+        }
+
+        public bool Sil(int id)
+        {
+            try
+            {
+                using (SqlCommand command = new SqlCommand($"DELETE FROM Calisanlar where Id=@p1", SqlServerBaglanti.Connection))
+                {
+                    command.Parameters.AddWithValue("@p1", id);
+                    SqlServerBaglanti.BaglantiAc();
+                    command.ExecuteNonQuery();
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return false;
+
+            }
+            finally
+            {
+                SqlServerBaglanti.BaglantiKapat();
             }
         }
     }
